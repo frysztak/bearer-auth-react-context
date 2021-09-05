@@ -70,7 +70,10 @@ const BearerAuthContext = createContext<BearerAuthContextData<any> | undefined>(
   undefined
 );
 
-export type RefreshHandler = (oldTokens: Tokens | null) => Promise<Tokens>;
+export type RefreshHandler<FetcherConfig = unknown> = (
+  fetcherConfig: FetcherConfig,
+  oldTokens: Tokens | null
+) => Promise<Tokens>;
 
 type BearerAuthContextProviderProps<FetcherConfig extends unknown> = Pick<
   BearerAuthContextData<FetcherConfig>,
@@ -91,7 +94,7 @@ type BearerAuthContextProviderProps<FetcherConfig extends unknown> = Pick<
   /**
    * Function that implements token refresh.
    */
-  refreshHandler: RefreshHandler;
+  refreshHandler: RefreshHandler<FetcherConfig>;
 };
 
 export function BearerAuthContextProvider<FetcherConfig>(
@@ -143,7 +146,7 @@ export function BearerAuthContextProvider<FetcherConfig>(
     setIsRefreshing(true);
     try {
       const newTokens: Tokens = await mutex.runExclusive(() =>
-        refreshHandler(tokens)
+        refreshHandler(fetcherConfig, tokens)
       );
       setIsRefreshing(false);
       updateTokens(newTokens);
@@ -154,7 +157,14 @@ export function BearerAuthContextProvider<FetcherConfig>(
       updateTokens(null);
       return null;
     }
-  }, [mutex, refreshHandler, setIsRefreshing, tokens, updateTokens]);
+  }, [
+    fetcherConfig,
+    mutex,
+    refreshHandler,
+    setIsRefreshing,
+    tokens,
+    updateTokens,
+  ]);
 
   return (
     <BearerAuthContext.Provider
