@@ -207,8 +207,12 @@ const bearerAuthWrapper =
           : await triggerRefresh();
 
         if (newTokens) {
-          const result = await fetcher(fetcherConfig, newTokens)(args);
-          return resolve(result);
+          try {
+            const result = await fetcher(fetcherConfig, newTokens)(args);
+            return resolve(result);
+          } catch (e2) {
+            return reject(e2);
+          }
         }
 
         return reject(e);
