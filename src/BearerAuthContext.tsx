@@ -11,8 +11,15 @@ import { useLocalstorageState } from 'rooks';
 import { Mutex } from 'async-mutex';
 
 export interface Tokens {
+  /**
+   * Bearer token.
+   */
   bearer: string;
-  refresh: string;
+
+  /**
+   * Refresh token. Optional, since your API might store refresh token in cookies.
+   */
+  refresh?: string;
 }
 
 export interface BearerAuthContextData<FetcherConfig> {
@@ -25,15 +32,18 @@ export interface BearerAuthContextData<FetcherConfig> {
    * Pair of tokens: bearer token and refresh token.
    */
   tokens: Tokens | null;
+
   /**
    * Manually sets tokens.
    * @param tokens
    */
   setTokens: (tokens: Tokens) => void;
+
   /**
    * Manually clears tokens.
    */
   clearTokens: () => void;
+
   /**
    * Runs when request fails. Checks whether request failed because of expired token.
    * @param error - any error returned by API
@@ -44,10 +54,12 @@ export interface BearerAuthContextData<FetcherConfig> {
    * Boolean flag telling whether token refresh is currently in progress.
    */
   isRefreshing: MutableRefObject<boolean>;
+
   /**
    * Manually trigger token refresh.
    */
   triggerRefresh: () => Promise<Tokens | null>;
+
   /**
    * Returns Promise that resolves when token is done refreshing. To be used in conjunction with `triggerRefresh`.
    */
@@ -69,11 +81,13 @@ type BearerAuthContextProviderProps<FetcherConfig extends unknown> = Pick<
    * @default `null`
    */
   initialAuthTokens?: Tokens;
+
   /**
    * LocalStorage key name for token pair.
    * @default `bearerAuthTokens`
    */
   authTokensLocalStorageKey?: string;
+
   /**
    * Function that implements token refresh.
    */
@@ -223,4 +237,14 @@ const bearerAuthWrapper =
 export function useBearerAuthWrapper<FetchConfig>() {
   const authContext = useBearerAuthContext<FetchConfig>();
   return bearerAuthWrapper(authContext);
+}
+
+export function useBearerToken(): string | undefined {
+  const authContext = useBearerAuthContext();
+  return authContext.tokens?.bearer;
+}
+
+export function useRefreshToken(): string | undefined {
+  const authContext = useBearerAuthContext();
+  return authContext.tokens?.refresh;
 }
