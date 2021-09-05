@@ -203,10 +203,8 @@ const bearerAuthWrapper =
   <FetcherConfig extends unknown>(
     bearerAuthContext: BearerAuthContextData<FetcherConfig>
   ) =>
-  <Data, Args>(
-    fetcher: Fetcher<FetcherConfig, Data, Args>,
-    args: Args
-  ): Promise<Data> => {
+  <Data, Args>(fetcher: Fetcher<FetcherConfig, Data, Args>) =>
+  (args: Args): Promise<Data> => {
     const {
       isRefreshing,
       triggerRefresh,
@@ -244,9 +242,11 @@ const bearerAuthWrapper =
     });
   };
 
-export function useBearerAuthWrapper<FetchConfig>() {
+export function useBearerAuthWrapper<FetchConfig, Data, Args>(
+  fetcher: Fetcher<FetchConfig, Data, Args>
+) {
   const authContext = useBearerAuthContext<FetchConfig>();
-  return bearerAuthWrapper(authContext);
+  return bearerAuthWrapper(authContext)(fetcher);
 }
 
 export function useBearerToken(): string | undefined {

@@ -54,8 +54,7 @@ describe('BearerAuthContext', () => {
       const fetchData = (config: FetchConfig) => () => fetch();
 
       const useRefreshWrapper = () => {
-        const bearerAuthWrapper = useBearerAuthWrapper<FetchConfig>();
-        return bearerAuthWrapper(fetchData, []);
+        return useBearerAuthWrapper(fetchData)(void 0);
       };
 
       const { result } = renderHook(() => useRefreshWrapper(), { wrapper });
@@ -72,9 +71,9 @@ describe('BearerAuthContext', () => {
 
       const fetchData = (config: FetchConfig) => () => fetch();
       const useRefreshWrapper = () => {
-        const bearerAuthWrapper = useBearerAuthWrapper<FetchConfig>();
+        const queryFn = useBearerAuthWrapper(fetchData);
         // eslint-disable-next-line
-        return useMemo(() => bearerAuthWrapper(fetchData, []), []);
+        return useMemo(() => queryFn(void 0), []);
       };
 
       await act(async () => {
@@ -115,10 +114,8 @@ describe('BearerAuthContext', () => {
       const fetchData = (config: FetchConfig) => () => fetch();
 
       const useSampleQuery = () => {
-        const bearerAuthWrapper = useBearerAuthWrapper<FetchConfig>();
-        return useQuery('sampleQuery', () =>
-          bearerAuthWrapper(fetchData, void 0)
-        );
+        const queryFn = useBearerAuthWrapper(fetchData);
+        return useQuery('sampleQuery', queryFn);
       };
 
       // Act
@@ -161,10 +158,8 @@ describe('BearerAuthContext', () => {
       const fetchData = (config: FetchConfig) => () => fetch();
 
       const useSampleQuery = () => {
-        const bearerAuthWrapper = useBearerAuthWrapper<FetchConfig>();
-        return useQuery('sampleQuery', () =>
-          bearerAuthWrapper(fetchData, void 0)
-        );
+        const queryFn = useBearerAuthWrapper(fetchData);
+        return useQuery('sampleQuery', queryFn);
       };
 
       // Act
@@ -234,21 +229,15 @@ describe('BearerAuthContext', () => {
       );
 
       const useSampleQuery1 = () => {
-        const bearerAuthWrapper = useBearerAuthWrapper<FetchConfig>();
-        return useQuery('sampleQuery1', () =>
-          bearerAuthWrapper(fetchData1, ['fetch1'])
-        );
+        const queryFn = useBearerAuthWrapper(fetchData1);
+        return useQuery('sampleQuery1', () => queryFn(['fetch1']));
       };
 
       const useSampleQuery2 = (enabled: boolean) => {
-        const bearerAuthWrapper = useBearerAuthWrapper<FetchConfig>();
-        return useQuery(
-          'sampleQuery2',
-          () => bearerAuthWrapper(fetchData2, ['fetch2']),
-          {
-            enabled,
-          }
-        );
+        const queryFn = useBearerAuthWrapper(fetchData2);
+        return useQuery('sampleQuery2', () => queryFn(['fetch2']), {
+          enabled,
+        });
       };
 
       // Act
@@ -348,17 +337,13 @@ describe('BearerAuthContext', () => {
       );
 
       const useSampleQuery1 = () => {
-        const bearerAuthWrapper = useBearerAuthWrapper<FetchConfig>();
-        return useQuery('sampleQuery1', () =>
-          bearerAuthWrapper(fetchData1, ['fetch1'])
-        );
+        const queryFn = useBearerAuthWrapper(fetchData1);
+        return useQuery('sampleQuery1', () => queryFn(['fetch1']));
       };
 
       const useSampleQuery2 = () => {
-        const bearerAuthWrapper = useBearerAuthWrapper<FetchConfig>();
-        return useQuery('sampleQuery2', () =>
-          bearerAuthWrapper(fetchData2, ['fetch2'])
-        );
+        const queryFn = useBearerAuthWrapper(fetchData2);
+        return useQuery('sampleQuery2', () => queryFn(['fetch2']));
       };
 
       // Act
@@ -454,25 +439,17 @@ describe('BearerAuthContext', () => {
       );
 
       const useSampleQuery1 = () => {
-        const bearerAuthWrapper = useBearerAuthWrapper<FetchConfig>();
-        return useQuery(
-          'sampleQuery1',
-          () => bearerAuthWrapper(fetchData1, ['fetch1']),
-          {
-            retry: false,
-          }
-        );
+        const queryFn = useBearerAuthWrapper(fetchData1);
+        return useQuery('sampleQuery1', () => queryFn(['fetch1']), {
+          retry: false,
+        });
       };
 
       const useSampleQuery2 = () => {
-        const bearerAuthWrapper = useBearerAuthWrapper<FetchConfig>();
-        return useQuery(
-          'sampleQuery2',
-          () => bearerAuthWrapper(fetchData2, ['fetch2']),
-          {
-            retry: false,
-          }
-        );
+        const queryFn = useBearerAuthWrapper(fetchData2);
+        return useQuery('sampleQuery2', () => queryFn(['fetch2']), {
+          retry: false,
+        });
       };
 
       // Act
@@ -564,25 +541,17 @@ describe('BearerAuthContext', () => {
       );
 
       const useSampleQuery1 = () => {
-        const bearerAuthWrapper = useBearerAuthWrapper<FetchConfig>();
-        return useQuery(
-          'sampleQuery1',
-          () => bearerAuthWrapper(fetchData1, ['fetch1']),
-          {
-            retry: false,
-          }
-        );
+        const queryFn = useBearerAuthWrapper(fetchData1);
+        return useQuery('sampleQuery1', () => queryFn(['fetch1']), {
+          retry: false,
+        });
       };
 
       const useSampleQuery2 = () => {
-        const bearerAuthWrapper = useBearerAuthWrapper<FetchConfig>();
-        return useQuery(
-          'sampleQuery2',
-          () => bearerAuthWrapper(fetchData2, ['fetch2']),
-          {
-            retry: false,
-          }
-        );
+        const queryFn = useBearerAuthWrapper(fetchData2);
+        return useQuery('sampleQuery2', () => queryFn(['fetch2']), {
+          retry: false,
+        });
       };
 
       // Act
