@@ -1,9 +1,11 @@
 import { Tokens } from '../../src';
 
-export interface ApiError {
-  response: Response;
-  body: any;
-}
+export type ApiError =
+  | {
+      response: Response;
+      body: any;
+    }
+  | Error;
 
 export const getAuthorizationHeader = (
   tokens: Tokens | null

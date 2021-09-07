@@ -1,8 +1,13 @@
 import { RefreshHandler, Tokens } from '../../src';
 import { AuthenticateResponse, postUsersRefreshToken } from './users';
 import { FetchConfig } from './config';
+import { ApiError } from './common';
 
-export function hasTokenExpired({ response, body }): boolean {
+export function hasTokenExpired(apiError: ApiError): boolean {
+  if (apiError instanceof Error) {
+    return false;
+  }
+  const { body } = apiError;
   return 'message' in body && body.message === 'Unauthorized';
 }
 
@@ -25,3 +30,7 @@ export const handleTokenRefresh: RefreshHandler = (
     }
   });
 };
+
+export function getErrorMessage(apiError: ApiError): string {
+  return apiError instanceof Error ? apiError.message : apiError.body.message;
+}

@@ -16,21 +16,25 @@ export const postUsersAuthenticate =
     const url = baseUrl + '/users/authenticate';
     const promise = new Promise<AuthenticateResponse>(
       async (resolve, reject) => {
-        const response = await fetch(url, {
-          signal,
-          method: 'POST',
-          headers: {
-            ...getAuthorizationHeader(tokens),
-            'Content-type': 'application/json; charset=UTF-8',
-          },
-          body: JSON.stringify(data),
-          credentials: 'include',
-        });
-        const json = await response.json();
-        if (!response.ok) {
-          reject({ response, body: json });
+        try {
+          const response = await fetch(url, {
+            signal,
+            method: 'POST',
+            headers: {
+              ...getAuthorizationHeader(tokens),
+              'Content-type': 'application/json; charset=UTF-8',
+            },
+            body: JSON.stringify(data),
+            credentials: 'include',
+          });
+          const json = await response.json();
+          if (!response.ok) {
+            reject({ response, body: json });
+          }
+          resolve(json);
+        } catch (err) {
+          reject(err);
         }
-        resolve(json);
       }
     );
     (promise as any).cancel = () => controller.abort();
@@ -46,20 +50,24 @@ export const postUsersRefreshToken =
     const url = baseUrl + '/users/refresh-token';
     const promise = new Promise<AuthenticateResponse>(
       async (resolve, reject) => {
-        const response = await fetch(url, {
-          signal,
-          method: 'POST',
-          headers: {
-            ...getAuthorizationHeader(tokens),
-            'Content-type': 'application/json; charset=UTF-8',
-          },
-          credentials: 'include',
-        });
-        const json = await response.json();
-        if (!response.ok) {
-          reject({ response, body: json });
+        try {
+          const response = await fetch(url, {
+            signal,
+            method: 'POST',
+            headers: {
+              ...getAuthorizationHeader(tokens),
+              'Content-type': 'application/json; charset=UTF-8',
+            },
+            credentials: 'include',
+          });
+          const json = await response.json();
+          if (!response.ok) {
+            reject({ response, body: json });
+          }
+          resolve(json);
+        } catch (err) {
+          reject(err);
         }
-        resolve(json);
       }
     );
     (promise as any).cancel = () => controller.abort();
@@ -74,20 +82,24 @@ export const getUsers =
     const { baseUrl } = config;
     const url = baseUrl + '/users';
     const promise = new Promise<UsersResponse>(async (resolve, reject) => {
-      const response = await fetch(url, {
-        signal,
-        method: 'GET',
-        headers: {
-          ...getAuthorizationHeader(tokens),
-          'Content-type': 'application/json; charset=UTF-8',
-        },
-        credentials: 'include',
-      });
-      const json = await response.json();
-      if (!response.ok) {
-        reject({ response, body: json });
+      try {
+        const response = await fetch(url, {
+          signal,
+          method: 'GET',
+          headers: {
+            ...getAuthorizationHeader(tokens),
+            'Content-type': 'application/json; charset=UTF-8',
+          },
+          credentials: 'include',
+        });
+        const json = await response.json();
+        if (!response.ok) {
+          reject({ response, body: json });
+        }
+        resolve(json);
+      } catch (err) {
+        reject(err);
       }
-      resolve(json);
     });
     (promise as any).cancel = () => controller.abort();
     return promise;

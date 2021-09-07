@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {
-  ApiError,
   AuthenticateResponse,
   useUsersAuthenticateMutation,
 } from '../api/users';
@@ -16,6 +15,8 @@ import {
 } from '@chakra-ui/react';
 import { Field, Form, Formik } from 'formik';
 import { useBearerAuthContext } from '../../src';
+import { getErrorMessage } from '../api/helpers';
+import { ApiError } from '../api/common';
 
 function validateUsername(value) {
   return !!value ? undefined : 'Username is required.';
@@ -37,10 +38,10 @@ export const LoginPage: React.FC = (props) => {
         refresh: '',
       });
     },
-    onError: ({ response, body }: ApiError) => {
+    onError: (error: ApiError) => {
       toast({
         title: 'Error',
-        description: body.message,
+        description: getErrorMessage(error),
         status: 'error',
         position: 'bottom-left',
         isClosable: true,

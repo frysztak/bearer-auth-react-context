@@ -12,6 +12,7 @@ import {
 import { useGetPetsPet } from '../api/pets';
 import { ApiError } from '../api/common';
 import { useUsersQuery } from '../api/users';
+import { getErrorMessage } from '../api/helpers';
 
 export const MainPage: React.FC = () => {
   const toast = useToast();
@@ -21,7 +22,7 @@ export const MainPage: React.FC = () => {
         status: 'error',
         position: 'bottom-left',
         title: 'Error',
-        description: error.body.message,
+        description: getErrorMessage(error),
         isClosable: true,
       });
     },
@@ -33,7 +34,7 @@ export const MainPage: React.FC = () => {
         status: 'error',
         position: 'bottom-left',
         title: 'Error',
-        description: error.body.message,
+        description: getErrorMessage(error),
         isClosable: true,
       });
     },

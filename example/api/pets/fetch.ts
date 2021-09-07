@@ -10,16 +10,20 @@ export const getPetsPet =
     const { baseUrl } = config;
     const url = baseUrl + '/pets/pet';
     const promise = new Promise<Pet>(async (resolve, reject) => {
-      const response = await fetch(url, {
-        signal,
-        method: 'GET',
-        headers: getAuthorizationHeader(tokens),
-      });
-      const json = await response.json();
-      if (!response.ok) {
-        reject({ response, body: json });
+      try {
+        const response = await fetch(url, {
+          signal,
+          method: 'GET',
+          headers: getAuthorizationHeader(tokens),
+        });
+        const json = await response.json();
+        if (!response.ok) {
+          reject({ response, body: json });
+        }
+        resolve(json);
+      } catch (err) {
+        reject(err);
       }
-      resolve(json);
     });
     (promise as any).cancel = () => controller.abort();
     return promise;
