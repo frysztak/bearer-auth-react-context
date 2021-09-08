@@ -4,6 +4,7 @@ import React, {
   PropsWithChildren,
   useCallback,
   useContext,
+  useEffect,
   useRef,
   useState,
 } from 'react';
@@ -64,6 +65,16 @@ export interface BearerAuthContextData<FetcherConfig> {
    * Returns Promise that resolves when token is done refreshing. To be used in conjunction with `triggerRefresh`.
    */
   tokenAwaiter: () => Promise<Tokens | null>;
+
+  /**
+   * Set callback to be called when token refresh fails. Re-exported as `useRefreshFailureHandler()` hook.
+   */
+  setRefreshFailureHandler: (handler: RefreshFailureHandler | null) => void;
+
+  /**
+   * Set callback to be called when token refresh succeeds. Re-exported as `useRefreshSuccessHandler()` hook.
+   */
+  setRefreshSuccessHandler: (handler: RefreshSuccessHandler | null) => void;
 }
 
 const BearerAuthContext = createContext<BearerAuthContextData<any> | undefined>(
@@ -74,6 +85,9 @@ export type RefreshHandler<FetcherConfig = unknown> = (
   fetcherConfig: FetcherConfig,
   oldTokens: Tokens | null
 ) => Promise<Tokens>;
+
+export type RefreshSuccessHandler = (tokens: Tokens) => void;
+export type RefreshFailureHandler = (error: unknown) => void;
 
 type BearerAuthContextProviderProps<FetcherConfig extends unknown> = Pick<
   BearerAuthContextData<FetcherConfig>,
@@ -115,6 +129,8 @@ export function BearerAuthContextProvider<FetcherConfig>(
     authTokensLocalStorageKey ?? 'bearerAuthTokens',
     initialAuthTokens ?? null
   );
+  const refreshFailureHandler = useRef<RefreshFailureHandler | null>(null);
+  const refreshSuccessHandler = useRef<RefreshSuccessHandler | null>(null);
 
   const tokenAwaiter = useCallback(() => {
     return new Promise<Tokens | null>((resolve) => {
@@ -142,21 +158,25 @@ export function BearerAuthContextProvider<FetcherConfig>(
     updateTokens(null);
   }, [updateTokens]);
 
-  const triggerRefresh = useCallback(async () => {
+  const triggerRefresh = useCallback(() => {
     setIsRefreshing(true);
-    try {
-      const newTokens: Tokens = await mutex.runExclusive(() =>
+    return new Promise<Tokens | null>((resolve) => {
+      mutex.runExclusive(() => {
         refreshHandler(fetcherConfig, tokens)
-      );
-      setIsRefreshing(false);
-      updateTokens(newTokens);
-
-      return newTokens;
-    } catch (e) {
-      setIsRefreshing(false);
-      updateTokens(null);
-      return null;
-    }
+          .then((newTokens: Tokens) => {
+            setIsRefreshing(false);
+            updateTokens(newTokens);
+            refreshSuccessHandler.current?.(newTokens);
+            resolve(newTokens);
+          })
+          .catch((e: unknown) => {
+            setIsRefreshing(false);
+            updateTokens(null);
+            refreshFailureHandler.current?.(e);
+            resolve(null);
+          });
+      });
+    });
   }, [
     fetcherConfig,
     mutex,
@@ -165,6 +185,20 @@ export function BearerAuthContextProvider<FetcherConfig>(
     tokens,
     updateTokens,
   ]);
+
+  const setRefreshFailureHandler = useCallback(
+    (handler: RefreshFailureHandler | null) => {
+      refreshFailureHandler.current = handler;
+    },
+    []
+  );
+
+  const setRefreshSuccessHandler = useCallback(
+    (handler: RefreshSuccessHandler | null) => {
+      refreshSuccessHandler.current = handler;
+    },
+    []
+  );
 
   return (
     <BearerAuthContext.Provider
@@ -177,6 +211,8 @@ export function BearerAuthContextProvider<FetcherConfig>(
         isRefreshing: isRefreshingRef,
         triggerRefresh,
         tokenAwaiter,
+        setRefreshFailureHandler,
+        setRefreshSuccessHandler,
       }}
     >
       {children}
@@ -257,4 +293,20 @@ export function useBearerToken(): string | undefined {
 export function useRefreshToken(): string | undefined {
   const authContext = useBearerAuthContext();
   return authContext.tokens?.refresh;
+}
+
+export function useRefreshFailureHandler(handler: RefreshFailureHandler) {
+  const { setRefreshFailureHandler } = useBearerAuthContext();
+  useEffect(() => {
+    setRefreshFailureHandler(handler);
+    return () => setRefreshFailureHandler(null);
+  }, [handler, setRefreshFailureHandler]);
+}
+
+export function useRefreshSuccessHandler(handler: RefreshSuccessHandler) {
+  const { setRefreshSuccessHandler } = useBearerAuthContext();
+  useEffect(() => {
+    setRefreshSuccessHandler(handler);
+    return () => setRefreshSuccessHandler(null);
+  }, [handler, setRefreshSuccessHandler]);
 }
