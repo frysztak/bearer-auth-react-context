@@ -155,8 +155,8 @@ export function BearerAuthContextProvider<FetcherConfig>(
   const [mutex] = useState(new Mutex());
 
   const clearTokens = useCallback(() => {
-    updateTokens(null);
-  }, [updateTokens]);
+    setTokens(null);
+  }, [setTokens]);
 
   const triggerRefresh = useCallback(() => {
     setIsRefreshing(true);
