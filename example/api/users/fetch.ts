@@ -4,15 +4,14 @@ import {
   AuthenticateResponse,
   UsersResponse,
 } from './models';
-import { Tokens } from '../../../src';
 import { getAuthorizationHeader } from '../common';
 
 export const postUsersAuthenticate =
-  (config: FetchConfig, tokens: Tokens | null) =>
+  (config: FetchConfig) =>
   (data: AuthenticateRequest): Promise<AuthenticateResponse> => {
     const controller = new AbortController();
     const { signal } = controller;
-    const { baseUrl } = config;
+    const { baseUrl, bearerToken } = config;
     const url = baseUrl + '/users/authenticate';
     const promise = new Promise<AuthenticateResponse>(
       async (resolve, reject) => {
@@ -21,7 +20,7 @@ export const postUsersAuthenticate =
             signal,
             method: 'POST',
             headers: {
-              ...getAuthorizationHeader(tokens),
+              ...getAuthorizationHeader(bearerToken),
               'Content-type': 'application/json; charset=UTF-8',
             },
             body: JSON.stringify(data),
@@ -42,11 +41,10 @@ export const postUsersAuthenticate =
   };
 
 export const postUsersRefreshToken =
-  (config: FetchConfig, tokens: Tokens | null) =>
-  (): Promise<AuthenticateResponse> => {
+  (config: FetchConfig) => (): Promise<AuthenticateResponse> => {
     const controller = new AbortController();
     const { signal } = controller;
-    const { baseUrl } = config;
+    const { baseUrl, bearerToken } = config;
     const url = baseUrl + '/users/refresh-token';
     const promise = new Promise<AuthenticateResponse>(
       async (resolve, reject) => {
@@ -55,7 +53,7 @@ export const postUsersRefreshToken =
             signal,
             method: 'POST',
             headers: {
-              ...getAuthorizationHeader(tokens),
+              ...getAuthorizationHeader(bearerToken),
               'Content-type': 'application/json; charset=UTF-8',
             },
             credentials: 'include',
@@ -74,33 +72,31 @@ export const postUsersRefreshToken =
     return promise;
   };
 
-export const getUsers =
-  (config: FetchConfig, tokens: Tokens | null) =>
-  (): Promise<UsersResponse> => {
-    const controller = new AbortController();
-    const { signal } = controller;
-    const { baseUrl } = config;
-    const url = baseUrl + '/users';
-    const promise = new Promise<UsersResponse>(async (resolve, reject) => {
-      try {
-        const response = await fetch(url, {
-          signal,
-          method: 'GET',
-          headers: {
-            ...getAuthorizationHeader(tokens),
-            'Content-type': 'application/json; charset=UTF-8',
-          },
-          credentials: 'include',
-        });
-        const json = await response.json();
-        if (!response.ok) {
-          reject({ response, body: json });
-        }
-        resolve(json);
-      } catch (err) {
-        reject(err);
+export const getUsers = (config: FetchConfig) => (): Promise<UsersResponse> => {
+  const controller = new AbortController();
+  const { signal } = controller;
+  const { baseUrl, bearerToken } = config;
+  const url = baseUrl + '/users';
+  const promise = new Promise<UsersResponse>(async (resolve, reject) => {
+    try {
+      const response = await fetch(url, {
+        signal,
+        method: 'GET',
+        headers: {
+          ...getAuthorizationHeader(bearerToken),
+          'Content-type': 'application/json; charset=UTF-8',
+        },
+        credentials: 'include',
+      });
+      const json = await response.json();
+      if (!response.ok) {
+        reject({ response, body: json });
       }
-    });
-    (promise as any).cancel = () => controller.abort();
-    return promise;
-  };
+      resolve(json);
+    } catch (err) {
+      reject(err);
+    }
+  });
+  (promise as any).cancel = () => controller.abort();
+  return promise;
+};

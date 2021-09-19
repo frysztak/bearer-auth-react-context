@@ -11,19 +11,17 @@ export function hasTokenExpired(apiError: ApiError): boolean {
   return 'message' in body && body.message === 'Unauthorized';
 }
 
-export const handleTokenRefresh: RefreshHandler = (
-  fetcherConfig: FetchConfig,
-  oldTokens: Tokens | null
+export const handleTokenRefresh: RefreshHandler<FetchConfig> = (
+  fetcherConfig
 ): Promise<Tokens> => {
   return new Promise<Tokens>(async (resolve, reject) => {
     try {
       const newTokens: AuthenticateResponse = await postUsersRefreshToken(
-        fetcherConfig,
-        oldTokens
+        fetcherConfig
       )();
 
       resolve({
-        bearer: newTokens.jwtToken,
+        bearerToken: newTokens.jwtToken,
       });
     } catch (e) {
       reject(e);

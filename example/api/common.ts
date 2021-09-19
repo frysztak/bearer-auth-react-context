@@ -1,5 +1,3 @@
-import { Tokens } from '../../src';
-
 export type ApiError =
   | {
       response: Response;
@@ -8,12 +6,12 @@ export type ApiError =
   | Error;
 
 export const getAuthorizationHeader = (
-  tokens: Tokens | null
+  bearerToken?: string
 ): Record<string, string> => {
-  if (!tokens) {
+  if (!bearerToken) {
     return {};
   }
   return {
-    Authorization: `Bearer ${tokens.bearer}`,
+    Authorization: `Bearer ${bearerToken}`,
   };
 };

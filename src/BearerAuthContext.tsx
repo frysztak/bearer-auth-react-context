@@ -15,24 +15,20 @@ export interface Tokens {
   /**
    * Bearer token.
    */
-  bearer: string;
+  bearerToken?: string;
 
   /**
    * Refresh token. Optional, since your API might store refresh token in cookies.
    */
-  refresh?: string;
+  refreshToken?: string;
 }
 
-export interface BearerAuthContextData<FetcherConfig> {
+export interface BearerAuthContextData<FetcherConfig extends Tokens> {
   /**
    * Generic configuration to be consumed by fetcher.
+   * Includes pair of tokens: bearer token and refresh token.
    */
   fetcherConfig: FetcherConfig;
-
-  /**
-   * Pair of tokens: bearer token and refresh token.
-   */
-  tokens: Tokens | null;
 
   /**
    * Manually sets tokens.
@@ -81,15 +77,14 @@ const BearerAuthContext = createContext<BearerAuthContextData<any> | undefined>(
   undefined
 );
 
-export type RefreshHandler<FetcherConfig = unknown> = (
-  fetcherConfig: FetcherConfig,
-  oldTokens: Tokens | null
+export type RefreshHandler<FetcherConfig extends Tokens> = (
+  fetcherConfig: FetcherConfig
 ) => Promise<Tokens>;
 
 export type RefreshSuccessHandler = (tokens: Tokens) => void;
 export type RefreshFailureHandler = (error: unknown) => void;
 
-type BearerAuthContextProviderProps<FetcherConfig extends unknown> = Pick<
+type BearerAuthContextProviderProps<FetcherConfig extends Tokens> = Pick<
   BearerAuthContextData<FetcherConfig>,
   'fetcherConfig' | 'hasTokenExpired'
 > & {
@@ -162,7 +157,7 @@ export function BearerAuthContextProvider<FetcherConfig>(
     setIsRefreshing(true);
     return new Promise<Tokens | null>((resolve) => {
       mutex.runExclusive(() => {
-        refreshHandler(fetcherConfig, tokens)
+        refreshHandler(fetcherConfig)
           .then((newTokens: Tokens) => {
             setIsRefreshing(false);
             updateTokens(newTokens);
@@ -177,14 +172,7 @@ export function BearerAuthContextProvider<FetcherConfig>(
           });
       });
     });
-  }, [
-    fetcherConfig,
-    mutex,
-    refreshHandler,
-    setIsRefreshing,
-    tokens,
-    updateTokens,
-  ]);
+  }, [fetcherConfig, mutex, refreshHandler, setIsRefreshing, updateTokens]);
 
   const setRefreshFailureHandler = useCallback(
     (handler: RefreshFailureHandler | null) => {
@@ -203,8 +191,10 @@ export function BearerAuthContextProvider<FetcherConfig>(
   return (
     <BearerAuthContext.Provider
       value={{
-        fetcherConfig,
-        tokens,
+        fetcherConfig: {
+          ...fetcherConfig,
+          ...tokens,
+        },
         clearTokens,
         setTokens,
         hasTokenExpired,
@@ -220,7 +210,7 @@ export function BearerAuthContextProvider<FetcherConfig>(
   );
 }
 
-export const useBearerAuthContext = <FetcherConfig extends unknown>() => {
+export const useBearerAuthContext = <FetcherConfig extends Tokens>() => {
   const context = useContext<BearerAuthContextData<FetcherConfig> | undefined>(
     BearerAuthContext
   );
@@ -231,12 +221,11 @@ export const useBearerAuthContext = <FetcherConfig extends unknown>() => {
 };
 
 type Fetcher<FetcherConfig, Data, Args> = (
-  config: FetcherConfig,
-  tokens: Tokens | null
+  config: FetcherConfig
 ) => (args: Args) => Promise<Data>;
 
 const bearerAuthWrapper =
-  <FetcherConfig extends unknown>(
+  <FetcherConfig extends Tokens>(
     bearerAuthContext: BearerAuthContextData<FetcherConfig>
   ) =>
   <Data, Args>(fetcher: Fetcher<FetcherConfig, Data, Args>) =>
@@ -247,12 +236,11 @@ const bearerAuthWrapper =
       tokenAwaiter,
       hasTokenExpired,
       fetcherConfig,
-      tokens,
     } = bearerAuthContext;
 
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await fetcher(fetcherConfig, tokens)(args);
+        const result = await fetcher(fetcherConfig)(args);
         return resolve(result);
       } catch (e) {
         const tokenExpired: boolean = hasTokenExpired(e);
@@ -266,7 +254,11 @@ const bearerAuthWrapper =
 
         if (newTokens) {
           try {
-            const result = await fetcher(fetcherConfig, newTokens)(args);
+            const newConfig = {
+              ...fetcherConfig,
+              ...newTokens,
+            };
+            const result = await fetcher(newConfig)(args);
             return resolve(result);
           } catch (e2) {
             return reject(e2);
@@ -287,12 +279,12 @@ export function useBearerAuthWrapper<FetchConfig, Data, Args>(
 
 export function useBearerToken(): string | undefined {
   const authContext = useBearerAuthContext();
-  return authContext.tokens?.bearer;
+  return authContext.fetcherConfig.bearerToken;
 }
 
 export function useRefreshToken(): string | undefined {
   const authContext = useBearerAuthContext();
-  return authContext.tokens?.refresh;
+  return authContext.fetcherConfig.refreshToken;
 }
 
 export function useRefreshFailureHandler(handler: RefreshFailureHandler) {

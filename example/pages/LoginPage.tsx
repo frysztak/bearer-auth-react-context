@@ -34,8 +34,7 @@ export const LoginPage: React.FC = (props) => {
     onSuccess: (data: AuthenticateResponse) => {
       console.log({ data });
       bearerAuthContext.setTokens({
-        bearer: data.jwtToken,
-        refresh: '',
+        bearerToken: data.jwtToken,
       });
     },
     onError: (error: ApiError) => {

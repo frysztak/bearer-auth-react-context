@@ -21,20 +21,21 @@ const hasTokenExpired = (error: any) =>
   'statusCode' in error ? error.statusCode === 401 : false;
 
 const fetcherConfig = {};
+type FetcherConfig = typeof fetcherConfig;
 
 const oldTokens: Tokens = {
-  bearer: 'oldBearerToken',
-  refresh: 'oldRefreshToken',
+  bearerToken: 'oldBearerToken',
+  refreshToken: 'oldRefreshToken',
 };
 
 const newTokens: Tokens = {
-  bearer: 'newBearerToken',
-  refresh: 'newRefreshToken',
+  bearerToken: 'newBearerToken',
+  refreshToken: 'newRefreshToken',
 };
 
 describe('BearerAuthContext', () => {
   describe('bearerAuthWrapper', () => {
-    const refreshHandler: RefreshHandler = jest.fn(() =>
+    const refreshHandler: RefreshHandler<FetcherConfig> = jest.fn(() =>
       Promise.resolve(newTokens)
     );
     const wrapper: React.FC = ({ children }) => (
@@ -92,7 +93,7 @@ describe('BearerAuthContext', () => {
 
     it('immediately returns value if request succeeds', async () => {
       // Arrange
-      const refreshHandler: RefreshHandler = jest.fn(() =>
+      const refreshHandler: RefreshHandler<FetcherConfig> = jest.fn(() =>
         promiseDelay(50).then(() => Promise.resolve(newTokens))
       );
 
@@ -133,7 +134,7 @@ describe('BearerAuthContext', () => {
 
     it('refreshes token after Promise rejection', async () => {
       // Arrange
-      const refreshHandler: RefreshHandler = jest.fn(() =>
+      const refreshHandler: RefreshHandler<FetcherConfig> = jest.fn(() =>
         promiseDelay(50).then(() => Promise.resolve(newTokens))
       );
 
@@ -191,7 +192,7 @@ describe('BearerAuthContext', () => {
      * */
     it('works for Scenario #1', async () => {
       // Arrange
-      const refreshHandler: RefreshHandler = jest.fn(() =>
+      const refreshHandler: RefreshHandler<FetcherConfig> = jest.fn(() =>
         promiseDelay(50).then(() => Promise.resolve(newTokens))
       );
 
@@ -275,11 +276,11 @@ describe('BearerAuthContext', () => {
       expect(refreshHandler).toBeCalledTimes(1);
 
       expect(fetch1).toBeCalledTimes(2);
-      expect(fetchData1).toBeCalledWith(fetcherConfig, oldTokens);
-      expect(fetchData1).toBeCalledWith(fetcherConfig, newTokens);
+      expect(fetchData1).toBeCalledWith(oldTokens);
+      expect(fetchData1).toBeCalledWith(newTokens);
 
       expect(fetch2).toBeCalledTimes(1);
-      expect(fetchData2).toBeCalledWith(fetcherConfig, newTokens);
+      expect(fetchData2).toBeCalledWith(newTokens);
     });
 
     /*
@@ -299,7 +300,7 @@ describe('BearerAuthContext', () => {
      * */
     it('works for Scenario #2', async () => {
       // Arrange
-      const refreshHandler: RefreshHandler = jest.fn(() =>
+      const refreshHandler: RefreshHandler<FetcherConfig> = jest.fn(() =>
         promiseDelay(50).then(() => Promise.resolve(newTokens))
       );
 
@@ -374,12 +375,12 @@ describe('BearerAuthContext', () => {
       expect(refreshHandler).toBeCalledTimes(1);
 
       expect(fetch1).toBeCalledTimes(2);
-      expect(fetchData1).toBeCalledWith(fetcherConfig, oldTokens);
-      expect(fetchData1).toBeCalledWith(fetcherConfig, newTokens);
+      expect(fetchData1).toBeCalledWith(oldTokens);
+      expect(fetchData1).toBeCalledWith(newTokens);
 
       expect(fetch2).toBeCalledTimes(2);
-      expect(fetchData1).toBeCalledWith(fetcherConfig, oldTokens);
-      expect(fetchData2).toBeCalledWith(fetcherConfig, newTokens);
+      expect(fetchData1).toBeCalledWith(oldTokens);
+      expect(fetchData2).toBeCalledWith(newTokens);
     });
 
     /*
@@ -400,7 +401,7 @@ describe('BearerAuthContext', () => {
      * */
     it('works for Scenario #3', async () => {
       // Arrange
-      const refreshHandler: RefreshHandler = jest.fn(() =>
+      const refreshHandler: RefreshHandler<FetcherConfig> = jest.fn(() =>
         promiseDelay(50).then(() =>
           Promise.reject({
             statusCode: 501,
@@ -481,10 +482,10 @@ describe('BearerAuthContext', () => {
       expect(refreshHandler).toBeCalledTimes(1);
 
       expect(fetch1).toBeCalledTimes(1);
-      expect(fetchData1).toBeCalledWith(fetcherConfig, oldTokens);
+      expect(fetchData1).toBeCalledWith(oldTokens);
 
       expect(fetch2).toBeCalledTimes(1);
-      expect(fetchData2).toBeCalledWith(fetcherConfig, oldTokens);
+      expect(fetchData2).toBeCalledWith(oldTokens);
     });
 
     /*
@@ -505,7 +506,7 @@ describe('BearerAuthContext', () => {
      * */
     it('works for Scenario #4', async () => {
       // Arrange
-      const refreshHandler: RefreshHandler = jest.fn(() =>
+      const refreshHandler: RefreshHandler<FetcherConfig> = jest.fn(() =>
         Promise.resolve(newTokens)
       );
 
@@ -581,11 +582,11 @@ describe('BearerAuthContext', () => {
       expect(refreshHandler).toBeCalledTimes(1);
 
       expect(fetch1).toBeCalledTimes(1);
-      expect(fetchData1).toBeCalledWith(fetcherConfig, oldTokens);
+      expect(fetchData1).toBeCalledWith(oldTokens);
 
       expect(fetch2).toBeCalledTimes(2);
-      expect(fetchData2).toBeCalledWith(fetcherConfig, oldTokens);
-      expect(fetchData2).toBeCalledWith(fetcherConfig, newTokens);
+      expect(fetchData2).toBeCalledWith(oldTokens);
+      expect(fetchData2).toBeCalledWith(newTokens);
     });
   });
 });
