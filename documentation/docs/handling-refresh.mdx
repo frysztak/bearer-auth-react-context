@@ -1,0 +1,62 @@
+---
+id: handling-refresh
+custom_edit_url: null
+sidebar_label: Handling Refresh
+slug: /handling-refresh
+---
+
+# Handling Token Refresh
+
+For the library to automatically obtain fresh Bearer token, two properties need to be provided:
+
+```ts
+type hasTokenExpired = (error: any) => boolean;
+```
+
+and
+
+```ts
+type refreshHandler = RefreshHandler<FetcherConfig>;
+
+type RefreshHandler<FetcherConfig extends Tokens> = (
+  fetcherConfig: FetcherConfig
+) => Promise<Tokens>;
+```
+
+### `hasTokenExpired`
+
+This function is called whenever a request fails. Sample implementation:
+
+```ts
+export function hasTokenExpired(apiError: ApiError): boolean {
+  if (apiError instanceof Error) {
+    return false;
+  }
+  const { body } = apiError;
+  return 'message' in body && body.message === 'Unauthorized';
+}
+```
+
+### `refreshHandler`
+
+If request failed because of expired Bearer token, `refreshHandler` is called to refresh the token. Sample implementation:
+
+```ts
+export const handleTokenRefresh: RefreshHandler<FetchConfig> = (
+  fetcherConfig
+): Promise<Tokens> => {
+  return new Promise<Tokens>(async (resolve, reject) => {
+    try {
+      const newTokens: AuthenticateResponse = await postUsersRefreshToken(
+        fetcherConfig
+      )();
+
+      resolve({
+        bearerToken: newTokens.jwtToken,
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+```

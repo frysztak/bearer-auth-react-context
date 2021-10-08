@@ -1,0 +1,57 @@
+---
+id: network-calls
+custom_edit_url: null
+sidebar_label: Making Network Calls
+slug: /network-calls
+---
+
+# Making Network Calls
+
+Bearer Auth React Context performs token refresh lazily. Rather than keeping track of time
+(and refreshing the token just as it's about to expire), it monitors network requests.
+Since this library is not tied to any specific network library, it's unable to use interceptors to monitor the requests.
+If a request fails, user-provided `hasTokenExpired()` function is called to check if request failed because of outdated token.
+
+All request functions (or, as they're called internally, "fetchers") need to fulfil a specific interface:
+
+```ts
+type Fetcher<FetcherConfig extends Tokens, Data, Args> = (
+  config: FetcherConfig
+) => (args: Args) => Promise<Data>;
+```
+
+For example, using `fetch`:
+
+```ts
+export const getPets = (config: FetchConfig) => (): Promise<Pet> => {
+  const { baseUrl, bearerToken } = config;
+  const url = baseUrl + '/pets';
+  return new Promise<Pet>(async (resolve, reject) => {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: buildHeaders(bearerToken),
+      });
+      const json = await response.json();
+      if (!response.ok) {
+        reject({ response, body: json });
+      }
+      resolve(json);
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+```
+
+If you're using OpenAPI, you can use [this generator](https://github.com/frysztak/openapi-generator) to automatically produce request functions.
+
+Each call requires `config` (which includes `bearerToken`), which is stored in `BearerAuthContextProvider`.
+Accessing it manually each time would be inconvenient, but thanks to curried form of the fetcher function,
+it's trivial to implement a tiny wrapper. It's available as `useBearerAuthWrapper()` hook.
+Example usage (with React-Query):
+
+```ts
+const petsQuery = useQuery('pets', useBearerAuthWrapper(getPets));
+// do whatever with `petsQuery`
+```

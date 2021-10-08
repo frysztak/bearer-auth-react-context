@@ -1,0 +1,71 @@
+---
+id: getting-started
+custom_edit_url: null
+sidebar_label: Getting Started
+slug: /
+---
+
+# Bearer Auth React Context
+
+(Now that's a mouthful.)
+
+Bearer Auth React Context is a React Context meant to simplify integrations with APIs using Bearer Token Authorization.
+
+Bearer Token Authentication a common authentication method. For details, see [RFC6750](https://datatracker.ietf.org/doc/html/rfc6750), or various other online resources.
+
+While handling bearer token itself is straightforward, it needs to be refreshed, and that's where things get icky.
+I couldn't really find a sensible way of doing that in React (for example when using React-Query), hence this library.
+
+Bearer Auth React Context provides React Context and associated hooks that:
+
+- are network library (fetch, axios, etc.) agnostic
+- automatically handle token refresh
+- handles various edge cases (e.g.: if two requests fail at the same time, only one refresh request is sent)
+- store Bearer auth token in `localStorage`
+- provide convenient wrapper for network calls
+- provide callbacks for when token refresh succeeds or fails
+- plays nice with React-Query
+
+## Getting Started
+
+You need a working React project. Bootstrapped with Next.js, Create React App, manually, whatever your prefer - as long as it's React.
+
+1. Install `bearer-auth-react-context` with your favourite package manager, e.g.:
+
+```shell
+yarn add bearer-auth-react-context
+```
+
+2. Wrap your app with `<BearerAuthContextProvider>`, e.g.:
+
+```tsx
+const App = () => {
+  return (
+    <BearerAuthContextProvider
+      fetcherConfig={fetcherConfig}
+      hasTokenExpired={hasTokenExpired}
+      refreshHandler={handleTokenRefresh}
+    >
+      <MainPage />
+    </BearerAuthContextProvider>
+  );
+};
+
+ReactDOM.render(<App />, document.getElementById('root'));
+```
+
+3. Provide required props:
+
+- `fetcherConfig` - generic configuration object (typically including API URL) passed to each query function
+- `hasTokenExpired` - function used to decide whether request failed because of expired token
+- `refreshHandler` - function that performs actual token refresh
+
+For more details, see [Handling Refresh](/handling-refresh).
+
+4. Wrap all your API calls with `useBearerAuthWrapper()`. For more details, see [Making Network Calls](/network-calls).
+
+5. You're good to go!
+
+## Sample app
+
+Living, breathing example is available as...
