@@ -24,7 +24,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "tsdx lint"
+      "pre-commit": "pretty-quick --staged && tsdx lint"
     }
   },
   "prettier": {
@@ -59,7 +59,10 @@
     "@types/react": "^17.0.19",
     "@types/react-dom": "^17.0.9",
     "@weiran.zsd/tsdx": "^0.16.1",
-    "husky": "^7.0.2",
+    "eslint-plugin-prettier": "^4.0.0",
+    "husky-v4": "^4.3.8",
+    "prettier": "^2.4.1",
+    "pretty-quick": "^3.1.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-query": "^3.21.1",
