@@ -8,7 +8,7 @@ import {
   useBearerToken,
   useRefreshFailureHandler,
   useRefreshSuccessHandler,
-} from '../../src';
+} from 'bearer-auth-react-context';
 import { LoginPage } from './LoginPage';
 import { MainPage } from './MainPage';
 

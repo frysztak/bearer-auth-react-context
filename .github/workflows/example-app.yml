@@ -1,0 +1,28 @@
+name: Deploy App Example
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/example-app.yml'
+      - 'src/**'
+      - 'example/frontend/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./example/frontend
+    steps:
+      - uses: actions/checkout@v2
+      - name: create env file
+        run: |
+          touch .env
+          echo API_URL=${{ secrets.API_URL }} >> .env
+      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: 'bearer-auth-react-context-demo'
+          heroku_email: ${{secrets.HEROKU_EMAIL}}

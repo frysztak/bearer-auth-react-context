@@ -1,4 +1,4 @@
-import { useBearerAuthWrapper } from '../../../src';
+import { useBearerAuthWrapper } from 'bearer-auth-react-context';
 import { useQuery } from 'react-query';
 import { getPetsPet } from './fetch';
 

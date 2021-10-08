@@ -14,7 +14,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { Field, Form, Formik } from 'formik';
-import { useBearerAuthContext } from '../../src';
+import { useBearerAuthContext } from 'bearer-auth-react-context';
 import { getErrorMessage } from '../api/helpers';
 import { ApiError } from '../api/common';
 

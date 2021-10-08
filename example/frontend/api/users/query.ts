@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from 'react-query';
-import { useBearerAuthWrapper } from '../../../src';
+import { useBearerAuthWrapper } from 'bearer-auth-react-context';
 import { getUsers, postUsersAuthenticate } from './fetch';
 
 export const useUsersAuthenticateMutation = <Options>(options?: Options) => {

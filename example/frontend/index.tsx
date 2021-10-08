@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { ChakraProvider, Container } from '@chakra-ui/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { BearerAuthContextProvider } from '../src';
+import { BearerAuthContextProvider } from 'bearer-auth-react-context';
 import { FetchConfig } from './api/config';
 import { handleTokenRefresh, hasTokenExpired } from './api/helpers';
 import { RouterPage } from './pages/RouterPage';
