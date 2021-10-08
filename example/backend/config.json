@@ -1,0 +1,4 @@
+﻿{
+    "secret": "muchsecret123",
+    "expiresIn": "10s"
+}
