@@ -220,7 +220,7 @@ export const useBearerAuthContext = <FetcherConfig extends Tokens>() => {
   return context;
 };
 
-type Fetcher<FetcherConfig, Data, Args> = (
+type Fetcher<FetcherConfig extends Tokens, Data, Args> = (
   config: FetcherConfig
 ) => (args: Args) => Promise<Data>;
 
