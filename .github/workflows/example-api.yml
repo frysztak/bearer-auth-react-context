@@ -5,14 +5,15 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/example-api.yml'
       - 'example/backend/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     defaults:
-    run:
-      working-directory: ./example/backend
+      run:
+        working-directory: ./example/backend
     steps:
       - uses: actions/checkout@v2
       - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
