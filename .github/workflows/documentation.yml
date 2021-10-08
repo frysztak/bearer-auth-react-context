@@ -1,0 +1,51 @@
+name: Documentation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "documentation/**"
+
+jobs:
+  checks:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+      - name: Install deps
+        run: |
+            yarn install --frozen-lockfile
+
+      - name: Build docs
+        working-directory: ./documentation
+        run: |
+            yarn install --frozen-lockfile
+            yarn build
+  gh-release:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+      - name: Install deps
+        run: |
+            yarn install --frozen-lockfile
+      - uses: webfactory/ssh-agent@v0.5.0
+        with:
+          ssh-private-key: ${{ secrets.GH_PAGES_DEPLOY }}
+      - name: Release to GitHub Pages
+        working-directory: ./documentation
+        env:
+          USE_SSH: true
+          GIT_USER: git
+        run: |
+          git config --global user.email "${{secrets.DOCUSAURUS_EMAIL}}"
+          git config --global user.name "Sebastian Frysztak"
+          yarn install --frozen-lockfile
+          yarn deploy
